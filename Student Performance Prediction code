@@ -1,0 +1,94 @@
+# PROJECT: Student Performance Prediction
+# SUBJECT: AI Mini Project (Machine Learning)
+# CONCEPT: Linear Regression - Supervised Learning
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import matplotlib.pyplot as plt
+
+data = {
+    "StudentName": ["Rahul", "Priya", "Karthik", "Sneha", "Arjun", "Meena", "Vijay", "Divya", "Anand", "Kiran"],
+    "StudyHours": [8, 6, 3, 7, 5, 9, 4, 2, 10, 6],
+    "Attendance": [90, 85, 60, 80, 75, 95, 70, 55, 98, 82],
+    "AssignmentsCompleted": [5, 4, 2, 4, 3, 5, 3, 1, 5, 4],
+    "SleepHours": [7, 8, 6, 7, 6, 8, 7, 5, 8, 6],
+    "Marks": [88, 80, 50, 75, 65, 92, 60, 45, 95, 72]
+}
+df = pd.DataFrame(data)
+print(" STUDENT PERFORMANCE DATASET")
+# STEP 2: Data Preparation
+X = df[["StudyHours", "Attendance", "AssignmentsCompleted", "SleepHours"]]
+y = df["Marks"]
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+print("\n Model Training Completed Successfully!")
+
+# STEP 4: Evaluate the Model
+
+y_pred = model.predict(X_test)
+
+print(" MODEL EVALUATION RESULTS")
+print(f"Mean Absolute Error  : {mean_absolute_error(y_test, y_pred):.2f}")
+print(f"Mean Squared Error   : {mean_squared_error(y_test, y_pred):.2f}")
+print(f"R2 Score (Accuracy)  : {r2_score(y_test, y_pred):.2f}")
+
+coeff_df = pd.DataFrame(model.coef_, X.columns, columns=['Coefficient'])
+print(" LINEAR REGRESSION EQUATION")
+print(coeff_df)
+print(f"Intercept: {model.intercept_:.2f}")
+
+print("\nEquation: ")
+print(f"Marks = ({model.intercept_:.2f}) + ({model.coef_[0]:.2f} * StudyHours) + ({model.coef_[1]:.2f} * Attendance) + ({model.coef_[2]:.2f} * AssignmentsCompleted) + ({model.coef_[3]:.2f} * SleepHours)")
+
+# STEP 6: Predict Marks for New Students
+print(" STUDENT PERFORMANCE PREDICTION SYSTEM")
+num = int(input("\nEnter number of students to predict: "))
+results = []
+
+for i in range(num):
+    print(f"\n--- Enter details for Student {i+1} ---")
+    name = input("Enter Student Name: ")
+    study = float(input("Enter Study Hours per day (0–10): "))
+    attendance = float(input("Enter Attendance Percentage (0–100): "))
+    assignments = int(input("Enter Number of Assignments Completed (0–5): "))
+    sleep = float(input("Enter Sleep Hours per day (0–10): "))
+
+    predicted_marks = model.predict([[study, attendance, assignments, sleep]])[0]
+
+    if predicted_marks > 100:
+        predicted_marks = 100
+    elif predicted_marks < 0:
+        predicted_marks = 0
+
+    if predicted_marks >= 85:
+        category = "Excellent"
+    elif predicted_marks >= 70:
+        category = "Good"
+    elif predicted_marks >= 50:
+        category = "Average"
+    else:
+        category = "Needs Improvement"
+
+    results.append([name, study, attendance, assignments, sleep, round(predicted_marks, 2), category])
+
+# Convert results to DataFrame for clean display
+result_df = pd.DataFrame(results, columns=["Name", "StudyHours", "Attendance", "Assignments", "SleepHours", "Predicted Marks", "Category"])
+print(" PREDICTION RESULTS")
+print(result_df)
+
+# STEP 7: Visualization (Actual vs Predicted)
+plt.figure(figsize=(8,5))
+plt.scatter(y_test, y_pred, color='blue')
+plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', linestyle='--')
+plt.xlabel("Actual Marks")
+plt.ylabel("Predicted Marks")
+plt.title("Actual vs Predicted Student Marks")
+plt.grid(True)
+plt.show()
+print("\n Student Performance Prediction completed successfully!")
